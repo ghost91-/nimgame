@@ -1,0 +1,10 @@
+{
+	"name": "nimgame",
+	"description": "An implementation of the famous \"nim game\"",
+	"copyright": "Copyright © 2015, Johannes Loher",
+	"homepage": "http://johannesloher.crabdance.com",
+	"authors": ["Johannes Loher"],
+	"dependencies": {
+		"ncurses": "~master"
+	},
+}

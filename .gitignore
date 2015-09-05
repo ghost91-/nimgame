@@ -1,0 +1,8 @@
+.dub
+docs.json
+docs
+__dummy.html
+*.o
+*.obj
+nimgame
+.DS_Store
