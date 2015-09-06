@@ -194,6 +194,7 @@ public:
     ///
     unittest
     {
+        import std.exception : assertThrown; 
         assertThrown!cursorOutOfWindowException(mainWindow.move(mainWindow.maxY + 1, mainWindow.maxX));
         assertThrown!cursorOutOfWindowException(mainWindow.move(mainWindow.maxY, mainWindow.maxX + 1));
     }

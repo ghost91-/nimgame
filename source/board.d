@@ -31,7 +31,7 @@ class NotEnoughMatchesException : Exception
 * A class that represents the board
 */
 
-class Board
+struct Board
 {
 private:
     ulong[] stacks;
@@ -46,6 +46,45 @@ public:
             stack = 2 * i + 1;
     }
 
+    ///
+    this(this)
+    {
+        stacks = stacks.dup;
+    }
+
+    ///
+    auto opAssign(Board rhs)
+    {
+        this.stacks = rhs.stacks.dup;
+        return this;
+    }
+
+    ///
+    auto opApply(int delegate(ref ulong, ref ulong) dg)
+    {
+        int result = 0;
+        foreach(i, stack; stacks)
+        {
+            result = dg(i, stack);
+            if(result)
+                break;
+        }
+        return result;
+    }
+
+    ///
+    auto opApply(int delegate(ref ulong) dg)
+    {
+        int result = 0;
+        foreach(stack; stacks)
+        {
+            result = dg(stack);
+            if(result)
+                break;
+        }
+        return result;
+    }
+
     /***********************************
     * Removes amount matches from stack stackNumber.
     * Params:
@@ -53,7 +92,7 @@ public:
     * amount = is the number of matches to remove.
     */
 
-    void removeMatches(uint stackNumber, uint amount)
+    void removeMatches(ulong stackNumber, ulong amount)
     {
         if(stackNumber >= stacks.length)
         {
@@ -75,6 +114,7 @@ public:
     ///
     unittest
     {
+        import std.exception : assertThrown; 
         auto board = new Board(1);
         assertThrown!StackDoesNotExistException(board.removeMatches(1, 2));
         assertThrown!NotEnoughMatchesException(board.removeMatches(0, 2));
@@ -120,7 +160,7 @@ public:
     * Returns: The number of stacks.
     */
 
-    size_t numberOfStacks() const @property
+    size_t length() const @property
     {
         return stacks.length;
     }

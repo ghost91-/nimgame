@@ -32,7 +32,9 @@ public:
     {
         auto menu = new Menu();
         menu.addMenuEntry(new MenuEntryMethod("Quit", &quit));
-        menu.addMenuEntry(new MenuEntryMethod("Start a new game", &startGame));
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs Human", &startGame, GameType.humanVsHuman));
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs AI", &startGame, GameType.humanVsAI));
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("AI vs AI", &startGame, GameType.AIVsAI));
         while(running)
         {
             menu.run();
@@ -43,7 +45,7 @@ public:
     * Creates and starts a new game
     */
 
-    void startGame()
+    void startGame(GameType gameType)
     {
         auto inputWindow = new Window(1, mainWindow.maxX, mainWindow.maxY, 0);
         mainWindow.setContent("Please enter the number of stacks for " ~
@@ -61,8 +63,8 @@ public:
                 mainWindow.setContent("Please enter a positive integer.");
             }
         }
-        auto board = new Board(numberOfStacks);
-        auto game = new Game(board);
+        auto board = Board(numberOfStacks);
+        auto game = new Game(gameType, board);
         game.play();
     }
 

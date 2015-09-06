@@ -8,6 +8,17 @@ import player;
 import window;
 
 /***********************************
+* Different types of games
+*/
+
+enum GameType : int
+{
+    humanVsHuman,
+    humanVsAI,
+    AIVsAI
+}
+
+/***********************************
 * A class which represents a game. It is used to manage the turns of the players
 * and enforce the game rules. It also displays the board when needed.
 */
@@ -24,11 +35,11 @@ private:
     void displayBoard()
     {
         displayWindow.clear();
-        for(int j = 0; j < board.numberOfStacks; ++j)
+        foreach(i, stack; board)
         {
-            displayWindow.move(j, 0);
-            displayWindow.print(format("%d: ", j + 1));
-            for(int k = 0; k < board.numberOfMatchesInStack(j); ++k)
+            displayWindow.move(i.to!uint, 0);
+            displayWindow.print(format("%d: ", i + 1));
+            foreach(j; 0 .. stack)
             {
                 displayWindow.print("|");
             }
@@ -39,17 +50,31 @@ private:
 public:
 
     ///
-    this(Board board)
+    this(GameType gameType, Board board)
     {
         this.board = board;
-        players[0] = new LocalPlayer();
-        players[1] = new LocalPlayer();
         infoWindow = new Window(1, mainWindow.maxX, 0, 0);
         inputWindow = new Window(1, mainWindow.maxX, mainWindow.maxY, 0);
         displayWindow = new Window(mainWindow.maxY - 2,
                                    mainWindow.maxX,
                                    1,
                                    0);
+        switch(gameType)
+        {
+            default: assert(0);
+            case GameType.humanVsHuman:
+                players[0] = new HumanPlayer();
+                players[1] = new HumanPlayer();
+                break;
+            case GameType.humanVsAI:
+                players[0] = new HumanPlayer();
+                players[1] = new AIPlayer();
+                break;
+            case GameType.AIVsAI:
+                players[0] = new AIPlayer();
+                players[1] = new AIPlayer();
+                break;
+        }
     }
 
     /***********************************
@@ -84,9 +109,8 @@ public:
                 {
                     try
                     {
-                        auto turnInfo = player.doTurn();
-                        board.removeMatches(turnInfo.stackNumber,
-                                            turnInfo.numberOfMatches);
+                        auto turnInfo = player.doTurn(board);
+                        board.removeMatches(turnInfo[0], turnInfo[1]);
                         break;
                     }
                     catch(ConvException e)
