@@ -62,13 +62,6 @@ public:
         return name;
     }
 
-    ///
-    unittest
-    {
-        auto entry = new MenuEntryBasic("test");
-        assert(entry.text == "test");
-    }
-
     /***********************************
     * This implementaton actually does nothing.
     */
@@ -79,56 +72,19 @@ public:
     }
 }
 
-/***********************************
-* An implementation of the MenuEntry interface, which contains a delegate
-* callback with no paramters.
-*/
-
-class MenuEntryMethod : MenuEntryBasic
+///
+unittest
 {
-protected:
-
-    /***********************************
-    * Representation of the callback.
-    */
-
-    void delegate() method;
-
-public:
-
-    ///
-    this(string text, void delegate() method)
-    in
-    {
-        assert(method !is null);
-    }
-    body
-    {
-        super(text);
-        this.method = method;
-    }
-
-    /***********************************
-    * Calls the callback.
-    * Examples:
-    * --------------------
-    * auto entry = new MenuEntryMethod("Some text", aDelegate);
-    * entry.select(); // Calls aDelegate
-    * --------------------
-    */
-
-    override void select()
-    {
-        method();
-    }
+    auto entry = new MenuEntryBasic("test");
+    assert(entry.text == "test");
 }
 
 /***********************************
 * An implementation of the MenuEntry interface, which contains a delegate
-* callback with one arbitrary parameter.
+* callback with arbitrary parameters.
 */
 
-class MenuEntryMethodParameter(T) : MenuEntryBasic
+class MenuEntryMethod(Args...) : MenuEntryBasic
 {
 protected:
 
@@ -136,18 +92,18 @@ protected:
     * Representation of the callback.
     */
 
-    void delegate(T) method;
+    void delegate(Args) method;
 
     /***********************************
-    * Representation of the parameter.
+    * Representation of the parameters.
     */
 
-    T parameter;
+    Args parameters;
 
 public:
 
     ///
-    this(string text, void delegate(T) method, T parameter)
+    this(string text, void delegate(Args) method, Args parameters)
     in
     {
         assert(method !is null);
@@ -156,11 +112,11 @@ public:
     {
         super(text);
         this.method = method;
-        this.parameter = parameter;
+        this.parameters = parameters;
     }
 
     /***********************************
-    * Calls the callback with the given parameter
+    * Calls the callback with the given parameters
     * Examples:
     * --------------------
     * auto entry = new MenuEntryMethod!int("Some text", aDelegate, 0);
@@ -170,8 +126,37 @@ public:
 
     override void select()
     {
-        method(parameter);
+        method(parameters);
     }
+}
+
+///
+unittest
+{
+    int capturer;
+
+    auto underTest = new MenuEntryMethod!()("Test text", { capturer = 42; });
+    underTest.select();
+
+    assert(underTest.text == "Test text");
+    assert(capturer == 42);
+}
+
+///
+unittest
+{
+    int capturerA;
+    string capturerB;
+
+    auto underTest = new MenuEntryMethod!(int, string)("Test text", (int a, string b) {
+        capturerA = a;
+        capturerB = b;
+    }, 42, "is the answer");
+    underTest.select();
+
+    assert(underTest.text == "Test text");
+    assert(capturerA == 42);
+    assert(capturerB == "is the answer");
 }
 
 /***********************************

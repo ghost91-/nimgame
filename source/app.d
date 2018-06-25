@@ -31,13 +31,12 @@ public:
     void run()
     {
         auto menu = new Menu();
-        menu.addMenuEntry(new MenuEntryMethod("Quit", &quit));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs Human",
+        menu.addMenuEntry(new MenuEntryMethod!()("Quit", &quit));
+        menu.addMenuEntry(new MenuEntryMethod!GameType("Human vs Human",
                 &startGame, GameType.humanVsHuman));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs AI",
+        menu.addMenuEntry(new MenuEntryMethod!GameType("Human vs AI",
                 &startGame, GameType.humanVsAI));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("AI vs AI",
-                &startGame, GameType.AIVsAI));
+        menu.addMenuEntry(new MenuEntryMethod!GameType("AI vs AI", &startGame, GameType.AIVsAI));
         while (running)
         {
             menu.run();

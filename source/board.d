@@ -62,7 +62,7 @@ public:
     }
 
     ///
-    Board dup() const nothrow pure @property  
+    Board dup() const nothrow pure @property
     {
         Board board;
         board.stacks = this.stacks.dup;
@@ -165,7 +165,7 @@ public:
         if (stackNumber >= stacks.length)
         {
             immutable msg = format(
-                    "There are only %s stacks, so it is not " ~ "possible to remove matches from stack %s.",
+                    "There are only %s stacks, so it is not " ~ "possible to get the number of matches in stack %s.",
                     stacks.length, stackNumber);
             throw(new StackDoesNotExistException(msg));
         }
