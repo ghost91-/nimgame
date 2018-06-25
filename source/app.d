@@ -19,7 +19,7 @@ private:
     bool running = true;
 public:
     ///
-    this()
+    this() pure nothrow @nogc
     {
 
     }
@@ -32,10 +32,13 @@ public:
     {
         auto menu = new Menu();
         menu.addMenuEntry(new MenuEntryMethod("Quit", &quit));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs Human", &startGame, GameType.humanVsHuman));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs AI", &startGame, GameType.humanVsAI));
-        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("AI vs AI", &startGame, GameType.AIVsAI));
-        while(running)
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs Human",
+                &startGame, GameType.humanVsHuman));
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("Human vs AI",
+                &startGame, GameType.humanVsAI));
+        menu.addMenuEntry(new MenuEntryMethodParameter!GameType("AI vs AI",
+                &startGame, GameType.AIVsAI));
+        while (running)
         {
             menu.run();
         }
@@ -48,22 +51,21 @@ public:
     void startGame(GameType gameType)
     {
         auto inputWindow = new Window(1, mainWindow.maxX, mainWindow.maxY, 0);
-        mainWindow.setContent("Please enter the number of stacks for " ~
-                              "this game.");
+        mainWindow.setContent("Please enter the number of stacks for " ~ "this game.");
         uint numberOfStacks;
-        while(true)
+        while (true)
         {
             try
             {
                 numberOfStacks = inputWindow.getInt().to!uint;
                 break;
             }
-            catch(ConvException)
+            catch (ConvException)
             {
                 mainWindow.setContent("Please enter a positive integer.");
             }
         }
-        auto board = Board(numberOfStacks);
+        const board = Board(numberOfStacks);
         auto game = new Game(gameType, board);
         game.play();
     }

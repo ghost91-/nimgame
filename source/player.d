@@ -1,10 +1,9 @@
 module player;
 
-import core.thread;
-
 import std.algorithm;
 import std.conv;
 import std.random;
+import std.range;
 import std.string;
 import std.typecons;
 
@@ -54,19 +53,11 @@ public:
     /***********************************
     * Lets the user input two integers as the information for the turn.
     * Returns: A tuple of those two integers.
-    * Examples:
-    * --------------------
-    * auto player = new LocalPlayer();
-    * auto turnInfo = player.doTurn(); // We assume the user enters 1 and 1.
-    * assert(turnInfo[0] == 1);
-    * assert(turnInfo.[1] == 1);
-    * --------------------
     */
 
     TurnInfo doTurn(Board board)
     {
-        return tuple(inputWindow.getInt().to!ulong - 1,
-                     inputWindow.getInt().to!ulong);
+        return tuple(inputWindow.getInt().to!ulong, inputWindow.getInt().to!ulong);
     }
 }
 
@@ -113,8 +104,8 @@ public:
     }
 
     /***********************************
-    * Used make the AI-player decide on a turn based on the current board.
-    * The AI-player plays perfect, which mean, if there is a win-turn, the
+    * Used to make the AI-player decide on a turn based on the current board.
+    * The AI-player plays perfect, which means, if there is a win-turn, the
     * AI-player chooses a win-turn.
     * Returns: The turn info for the chosen turn.
     */
@@ -122,19 +113,25 @@ public:
     TurnInfo doTurn(Board board)
     {
         TurnInfo[] turns;
-        Thread.sleep(dur!("msecs")(50));
-        foreach(stackNumber, stack; board)
+        TurnInfo[] winTurns;
+        import core.thread;
+
+        Thread.sleep(dur!("msecs")(500));
+        foreach (stackNumber, stack; board[].enumerate)
         {
-            foreach(numberOfMatches; 1 .. stack + 1)
+            foreach (numberOfMatches; 1 .. stack + 1)
             {
                 auto currentTurn = tuple(stackNumber, numberOfMatches);
-                if(isWinTurn(board, currentTurn))
+                if (isWinTurn(board, currentTurn))
                 {
-                    return currentTurn;
+                    winTurns ~= currentTurn;
                 }
                 turns ~= currentTurn;
             }
         }
-        return turns[uniform(0, turns.length)];
+        if (winTurns !is null)
+            return winTurns[uniform(0, winTurns.length)];
+        else
+            return turns[uniform(0, turns.length)];
     }
 }

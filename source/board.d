@@ -9,7 +9,8 @@ import std.string;
 
 class StackDoesNotExistException : Exception
 {
-    this(string msg)
+    ///
+    this(string msg) pure
     {
         super(msg);
     }
@@ -21,6 +22,7 @@ class StackDoesNotExistException : Exception
 
 class NotEnoughMatchesException : Exception
 {
+    ///
     this(string msg)
     {
         super(msg);
@@ -42,7 +44,7 @@ public:
     this(uint numberOfStacks)
     {
         stacks.length = numberOfStacks;
-        foreach(i, ref stack; stacks)
+        foreach (i, ref stack; stacks)
             stack = 2 * i + 1;
     }
 
@@ -60,29 +62,45 @@ public:
     }
 
     ///
-    auto opApply(int delegate(ref ulong, ref ulong) dg)
+    Board dup() const nothrow pure @property  
     {
-        int result = 0;
-        foreach(i, stack; stacks)
-        {
-            result = dg(i, stack);
-            if(result)
-                break;
-        }
-        return result;
+        Board board;
+        board.stacks = this.stacks.dup;
+        return board;
     }
 
     ///
-    auto opApply(int delegate(ref ulong) dg)
+    auto opSlice() pure @nogc
     {
-        int result = 0;
-        foreach(stack; stacks)
+        static struct rangeResult
         {
-            result = dg(stack);
-            if(result)
-                break;
+        private:
+            ulong[] stacks;
+        public:
+            bool empty() const nothrow pure @nogc @property
+            {
+                return stacks.length == 0;
+            }
+
+            ulong front() const pure @nogc @property
+            {
+                assert(!empty);
+                return stacks[0];
+            }
+
+            void popFront() pure @nogc
+            {
+                assert(!empty);
+                stacks = stacks[1 .. $];
+            }
+
+            auto save() const nothrow pure @nogc @property
+            {
+                return this;
+            }
         }
-        return result;
+
+        return rangeResult(stacks);
     }
 
     /***********************************
@@ -94,18 +112,16 @@ public:
 
     void removeMatches(ulong stackNumber, ulong amount)
     {
-        if(stackNumber >= stacks.length)
+        if (stackNumber >= stacks.length)
         {
-            auto msg = format("There are only %s stacks, so it is not "~
-                              "possible to remove matches from stack %s.",
-                              stacks.length,
-                              stackNumber + 1);
+            immutable msg = format(
+                    "There are only %s stacks, so it is not " ~ "possible to remove matches from stack %s.",
+                    stacks.length, stackNumber + 1);
             throw(new StackDoesNotExistException(msg));
         }
-        if(stacks[stackNumber] < amount)
+        if (stacks[stackNumber] < amount)
         {
-            auto msg = "You can't take more matches from a stack "~
-                       "than it contains.";
+            immutable msg = "You can't take more matches from a stack " ~ "than it contains.";
             throw(new NotEnoughMatchesException(msg));
         }
         stacks[stackNumber] -= amount;
@@ -114,7 +130,8 @@ public:
     ///
     unittest
     {
-        import std.exception : assertThrown; 
+        import std.exception : assertThrown;
+
         auto board = new Board(1);
         assertThrown!StackDoesNotExistException(board.removeMatches(1, 2));
         assertThrown!NotEnoughMatchesException(board.removeMatches(0, 2));
@@ -143,14 +160,13 @@ public:
     * Returns: The number of matches in stack stackNumber.
     */
 
-    ulong numberOfMatchesInStack(size_t stackNumber) const
+    ulong numberOfMatchesInStack(size_t stackNumber) const pure
     {
-        if(stackNumber >= stacks.length)
+        if (stackNumber >= stacks.length)
         {
-            auto msg = format("There are only %s stacks, so it is not "~
-                              "possible to remove matches from stack %s.",
-                              stacks.length,
-                              stackNumber);
+            immutable msg = format(
+                    "There are only %s stacks, so it is not " ~ "possible to remove matches from stack %s.",
+                    stacks.length, stackNumber);
             throw(new StackDoesNotExistException(msg));
         }
         return stacks[stackNumber];
@@ -160,7 +176,7 @@ public:
     * Returns: The number of stacks.
     */
 
-    size_t length() const @property
+    size_t length() const @property pure
     {
         return stacks.length;
     }

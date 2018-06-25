@@ -2,6 +2,8 @@ module game;
 
 import std.conv;
 import std.string;
+import std.range;
+import std.algorithm;
 
 import board;
 import player;
@@ -34,46 +36,37 @@ private:
 
     void displayBoard()
     {
+
         displayWindow.clear();
-        foreach(i, stack; board)
-        {
-            displayWindow.move(i.to!uint, 0);
-            displayWindow.print(format("%d: ", i + 1));
-            foreach(j; 0 .. stack)
-            {
-                displayWindow.print("|");
-            }
-        }
+        displayWindow.move(0, 0);
+        displayWindow.print(board[].enumerate.map!(a => a.index.to!string ~ ": " ~ replicate("|",
+                a.value)).join("\n"));
         displayWindow.update();
     }
 
 public:
 
     ///
-    this(GameType gameType, Board board)
+    this(GameType gameType, const Board board)
     {
-        this.board = board;
+        this.board = board.dup;
         infoWindow = new Window(1, mainWindow.maxX, 0, 0);
         inputWindow = new Window(1, mainWindow.maxX, mainWindow.maxY, 0);
-        displayWindow = new Window(mainWindow.maxY - 2,
-                                   mainWindow.maxX,
-                                   1,
-                                   0);
-        switch(gameType)
+        displayWindow = new Window(mainWindow.maxY - 2, mainWindow.maxX, 1, 0);
+        final switch (gameType) with (GameType)
         {
-            default: assert(0);
-            case GameType.humanVsHuman:
-                players[0] = new HumanPlayer();
-                players[1] = new HumanPlayer();
-                break;
-            case GameType.humanVsAI:
-                players[0] = new HumanPlayer();
-                players[1] = new AIPlayer();
-                break;
-            case GameType.AIVsAI:
-                players[0] = new AIPlayer();
-                players[1] = new AIPlayer();
-                break;
+        case humanVsHuman:
+            players[0] = new HumanPlayer();
+            players[1] = new HumanPlayer();
+            break;
+        case humanVsAI:
+            players[0] = new HumanPlayer();
+            players[1] = new AIPlayer();
+            break;
+        case AIVsAI:
+            players[0] = new AIPlayer();
+            players[1] = new AIPlayer();
+            break;
         }
     }
 
@@ -94,18 +87,16 @@ public:
         string msg;
         displayBoard();
 
-        outerLoop:
-        while(true)
+        outerLoop: while (true)
         {
-            foreach(i, player; players)
+            foreach (i, player; players)
             {
                 {
-                    msg = format("It's player %s's Turn. Please enter from " ~
-                                 "which stack to take how many matches.",
-                                 i + 1);
+                    msg = format("It's player %s's Turn. Please enter from " ~ "which stack to take how many matches.",
+                            i + 1);
                     infoWindow.setContent(msg);
                 }
-                while(true)
+                while (true)
                 {
                     try
                     {
@@ -113,16 +104,16 @@ public:
                         board.removeMatches(turnInfo[0], turnInfo[1]);
                         break;
                     }
-                    catch(ConvException e)
+                    catch (ConvException e)
                     {
                         msg = "Please enter two positive integers.";
                         infoWindow.setContent(msg);
                     }
-                    catch(StackDoesNotExistException e)
+                    catch (StackDoesNotExistException e)
                     {
                         infoWindow.setContent(e.msg);
                     }
-                    catch(NotEnoughMatchesException e)
+                    catch (NotEnoughMatchesException e)
                     {
                         infoWindow.setContent(e.msg);
                     }
@@ -130,16 +121,15 @@ public:
 
                 displayBoard();
 
-                if(!board.existsMatch)
+                if (!board.existsMatch)
                 {
-                    msg = format("Player %s won the game. " ~
-                                 "Press any key to return to the menu.",
-                                 i + 1);
+                    msg = format("Player %s won the game. " ~ "Press any key to return to the menu.",
+                            i + 1);
                     infoWindow.setContent(msg);
                     inputWindow.getKey();
                     break outerLoop;
                 }
             }
-        }  
+        }
     }
 }

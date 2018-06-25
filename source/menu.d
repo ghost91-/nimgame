@@ -174,13 +174,13 @@ public:
     }
 }
 
-
 /***********************************
 * Thrown when run() is called on an empty menu.
 */
 
-class menuEmptyException: Exception
+class MenuEmptyException : Exception
 {
+    ///
     this(string msg)
     {
         super(msg);
@@ -212,13 +212,13 @@ protected:
     }
     body
     {
-        foreach(uint i, entry; menuEntries)
-        {   
-            if(highlight == i)
-            {   
-                window.setAttribute(Attribute.reverse); 
+        foreach (uint i, entry; menuEntries)
+        {
+            if (highlight == i)
+            {
+                window.setAttribute(Attribute.reverse);
                 window.movePrint(i, 0u, format("%s", entry.text));
-                window.unsetAttribute(Attribute.reverse); 
+                window.unsetAttribute(Attribute.reverse);
             }
             else
                 window.movePrint(i, 0, format("%s", entry.text));
@@ -274,8 +274,7 @@ public:
 
     size_t maximumTextLength() @property const
     {
-        return menuEntries.map!(entry => entry.text.to!dstring.length)
-                          .reduce!(max);
+        return menuEntries.map!(entry => entry.text.to!dstring.length).reduce!max;
     }
 
     ///
@@ -284,8 +283,7 @@ public:
         auto menu = new Menu();
         string someText = "Some text";
         assert(someText.to!dstring.length == 9);
-        string someOtherText = "Some text, which contains more complex "~
-                               "characters: €, @, 𝔸";
+        string someOtherText = "Some text, which contains more complex characters: €, @, 𝔸";
         assert(someOtherText.to!dstring.length == 58);
         menu.addMenuEntry(new MenuEntryBasic(someText));
         menu.addMenuEntry(new MenuEntryBasic(someOtherText));
@@ -294,58 +292,55 @@ public:
 
     /***********************************
     * Activates the menu
-    * Throws: menuEmptyException if the menu does not contain an entries.
+    * Throws: MenuEmptyException if the menu does not contain an entries.
     */
 
     void run()
     {
-        if(menuEntries is null)
+        if (menuEntries is null)
         {
-            auto msg = "run() not callable on an empty menu.";
-            throw new menuEmptyException(msg);
+            immutable msg = "run() not callable on an empty menu.";
+            throw new MenuEmptyException(msg);
         }
-        uint highlight = 0;
+        uint highlight;
         int selection = -1;
 
         Key c;
 
-        uint x = (mainWindow.maxX - maximumTextLength.to!uint) / 2;
-        uint y = (mainWindow.maxY - length.to!uint) / 2;
-        auto window = new Window(length.to!uint,
-                                 maximumTextLength.to!uint,
-                                 y,
-                                 x);
+        immutable uint x = (mainWindow.maxX - maximumTextLength.to!uint) / 2;
+        immutable uint y = (mainWindow.maxY - length.to!uint) / 2;
+        auto window = new Window(length.to!uint, maximumTextLength.to!uint, y, x);
         mainWindow.clear();
-        mainWindow.movePrint(0, 0, "Use arrow keys to go up and down, press "~
-                                   "enter to select a menu entry");
+        mainWindow.movePrint(0, 0,
+                "Use arrow keys to go up and down, press enter to select a menu entry");
         mainWindow.update();
 
         print(window, highlight);
-        while(true)
-        {   
+        while (true)
+        {
             c = window.getKey();
-            switch(c)
+            switch (c)
             {
-                case Key.up:
-                    if(highlight == 0)
-                        highlight = (menuEntries.length - 1).to!uint;
-                    else
-                        --highlight;
-                    break;
-                case Key.down:
-                    if(highlight == menuEntries.length - 1)
-                        highlight = 0;
-                    else 
-                        ++highlight;
-                    break;
-                case Key.newline:
-                        selection = highlight;
-                    break;
-                default:
-                    break;
+            case Key.up:
+                if (highlight == 0)
+                    highlight = (menuEntries.length.to!int - 1).to!uint;
+                else
+                    --highlight;
+                break;
+            case Key.down:
+                if (highlight == menuEntries.length.to!int - 1)
+                    highlight = 0;
+                else
+                    ++highlight;
+                break;
+            case Key.newline:
+                selection = highlight;
+                break;
+            default:
+                break;
             }
 
-            if(selection >= 0)
+            if (selection >= 0)
             {
                 window.clear();
                 window.update();
@@ -354,16 +349,7 @@ public:
             }
             else
                 print(window, highlight);
-        }   
+        }
         return;
-    }
-
-    ///
-    unittest
-    {
-        auto menu = new Menu();
-        assertThrown!menuEmptyException(menu.run());
-        menu.addMenuEntry(new MenuEntryBasic("Some text"));
-        menu.run(); // The menu will be displayed and you can select entries.
     }
 }

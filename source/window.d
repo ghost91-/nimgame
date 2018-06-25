@@ -23,25 +23,6 @@ enum Attribute : int
 }
 
 /***********************************
-* Colors, which can be used as fore- and background of a window.
-*/
-
-enum Color : int
-{
-    black = COLOR_BLACK,
-    red = COLOR_RED,
-    green = COLOR_GREEN,
-    yellow = COLOR_YELLOW,
-    blue = COLOR_BLUE,
-    magenta = COLOR_MAGENTA,
-    cyan = COLOR_CYAN,
-    white = COLOR_WHITE
-}
-
-///
-enum int numberOfColors = EnumMembers!Color.length;
-
-/***********************************
 * Keys, which can be read as input
 */
 enum Key : int
@@ -58,8 +39,9 @@ enum Key : int
 * Thrown when the cursor is moved past the boundaries of a window.
 */
 
-class cursorOutOfWindowException : Exception
+class CursorOutOfWindowException : Exception
 {
+    ///
     this(string msg)
     {
         super(msg);
@@ -74,53 +56,36 @@ class Window
 {
 public:
 
-    static this()
+    static this() nothrow
     {
         initscr();
         deimos.ncurses.ncurses.clear();
         noecho();
         cbreak();
-        start_color();
-        foreach(immutable foregroundColor; EnumMembers!Color)
-        {
-            foreach(immutable backgroundColor; EnumMembers!Color)
-            {
-                init_pair(1 +
-                          numberOfColors *
-                          foregroundColor +
-                          backgroundColor,
-                          foregroundColor,
-                          backgroundColor);
-            }
-        }
         mainWindow = new Window(stdscr);
     }
 
-    static ~this()
+    static ~this() nothrow
     {
         endwin();
     }
 
     ///
-    this(uint height, uint width, uint y, uint x)
+    this(uint height, uint width, uint y, uint x) nothrow
     {
         window = newwin(height, width, y, x);
         keypad(window, true);
-        backgroundColor = Color.black;
-        foregroundColor = Color.white;
     }
 
     ///
-    this(WINDOW* window)
+    this(WINDOW* window) nothrow
     {
         this.window = window;
         keypad(window, true);
-        backgroundColor = Color.black;
-        foregroundColor = Color.white;
     }
 
     ///
-    ~this()
+    ~this() nothrow
     {
         delwin(window);
     }
@@ -133,7 +98,7 @@ public:
     * --------------------
     */
 
-    void print(string text)
+    void print(string text) nothrow
     {
         wprintw(window, toStringz(text));
     }
@@ -183,10 +148,10 @@ public:
 
     void move(uint y, uint x)
     {
-        if(y > maxY || x > maxX)
+        if (y > maxY || x > maxX)
         {
-            auto msg = "Can't move the cursor past the windows boundaries.";
-            throw new cursorOutOfWindowException(msg);
+            immutable msg = "Can't move the cursor past the windows boundaries.";
+            throw new CursorOutOfWindowException(msg);
         }
         wmove(window, y, x);
     }
@@ -194,9 +159,12 @@ public:
     ///
     unittest
     {
-        import std.exception : assertThrown; 
-        assertThrown!cursorOutOfWindowException(mainWindow.move(mainWindow.maxY + 1, mainWindow.maxX));
-        assertThrown!cursorOutOfWindowException(mainWindow.move(mainWindow.maxY, mainWindow.maxX + 1));
+        import std.exception : assertThrown;
+
+        assertThrown!CursorOutOfWindowException(mainWindow.move(mainWindow.maxY + 1,
+                mainWindow.maxX));
+        assertThrown!CursorOutOfWindowException(mainWindow.move(mainWindow.maxY,
+                mainWindow.maxX + 1));
     }
 
     /***********************************
@@ -210,9 +178,9 @@ public:
     * --------------------
     */
 
-    Key getKey()
+    Key getKey() nothrow
     {
-        return cast(Key)wgetch(window);
+        return cast(Key) wgetch(window);
     }
 
     /***********************************
@@ -226,8 +194,7 @@ public:
 
     int getInt()
     {
-        static enum maximumIntLength = max(int.min.to!string.length,
-                                           int.max.to!string.length);
+        static enum maximumIntLength = max(int.min.to!string.length, int.max.to!string.length);
         return getString(maximumIntLength).to!int;
     }
 
@@ -260,7 +227,7 @@ public:
     * Returns: The maximum y value of the window.
     */
 
-    uint maxY() @property
+    uint maxY() @property nothrow
     {
         return getmaxy(window);
     }
@@ -269,7 +236,7 @@ public:
     * Returns: The maximum x value of the window.
     */
 
-    uint maxX() @property
+    uint maxX() @property nothrow
     {
         return getmaxx(window);
     }
@@ -283,7 +250,7 @@ public:
     * --------------------
     */
 
-    void setAttribute(Attribute attribute)
+    void setAttribute(Attribute attribute) nothrow
     {
         wattron(window, attribute);
     }
@@ -297,28 +264,9 @@ public:
     * --------------------
     */
 
-    void unsetAttribute(Attribute attribute)
+    void unsetAttribute(Attribute attribute) nothrow
     {
         wattroff(window, attribute);
-    }
-
-    /***********************************
-    * Sets fore- and background colors.
-    * Examples:
-    * --------------------
-    * mainWindow.setColors(Color.red, Color.blue);
-    * mainWindow.print("Some Text"); // "Some Text" is printed red on blue.
-    * --------------------
-    */
-
-    void setColors(Color foregroundColor, Color backgroundColor)
-    {
-        wattron(window, COLOR_PAIR(1 +
-                                   numberOfColors *
-                                   foregroundColor +
-                                   backgroundColor));
-        this.backgroundColor = backgroundColor;
-        this.foregroundColor = foregroundColor;
     }
 
     /***********************************
@@ -331,7 +279,7 @@ public:
     * --------------------
     */
 
-    void update()
+    void update() nothrow
     {
         wrefresh(window);
     }
@@ -345,14 +293,13 @@ public:
     * --------------------
     */
 
-    void clear()
+    void clear() nothrow
     {
         wclear(window);
     }
+
 private:
     WINDOW* window;
-    Color backgroundColor;
-    Color foregroundColor;
 }
 
 /***********************************
