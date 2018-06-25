@@ -290,7 +290,7 @@ public:
         uint highlight;
         int selection = -1;
 
-        Key c;
+        Key key;
 
         immutable uint x = (mainWindow.maxX - maximumTextLength.to!uint) / 2;
         immutable uint y = (mainWindow.maxY - length.to!uint) / 2;
@@ -303,8 +303,8 @@ public:
         print(window, highlight);
         while (true)
         {
-            c = window.getKey();
-            switch (c)
+            key = window.getKey();
+            switch (key)
             {
             case Key.up:
                 if (highlight == 0)
