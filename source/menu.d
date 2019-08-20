@@ -197,16 +197,16 @@ protected:
     }
     body
     {
-        foreach (uint i, entry; menuEntries)
+        foreach (i, entry; menuEntries)
         {
             if (highlight == i)
             {
                 window.setAttribute(Attribute.reverse);
-                window.movePrint(i, 0u, format("%s", entry.text));
+                window.movePrint(i.to!uint, 0u, format("%s", entry.text));
                 window.unsetAttribute(Attribute.reverse);
             }
             else
-                window.movePrint(i, 0, format("%s", entry.text));
+                window.movePrint(i.to!uint, 0, format("%s", entry.text));
         }
         window.update();
     }
@@ -277,6 +277,7 @@ public:
 
     /***********************************
     * Activates the menu
+    *
     * Throws: MenuEmptyException if the menu does not contain an entries.
     */
 
