@@ -1,7 +1,8 @@
 {
     "name": "nimgame",
-    "description": "An implementation of the famous \"nim game\"",
-    "copyright": "Copyright © 2018, Johannes Loher",
+    "description": "An implementation of the famous Nim game.",
+    "copyright": "Copyright © 2019, Johannes Loher",
+    "license": "MIT",
     "homepage": "https://www.johannesloher.com/",
     "authors": ["Johannes Loher"],
     "dependencies": {
